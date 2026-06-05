@@ -69,6 +69,7 @@ install_lite() {
 
     # 3. Select transport protocol (TCP / XHTTP / gRPC)
     select_transport
+    select_fingerprint
 
     # 4. Ask how many keys
     echo ""
@@ -153,6 +154,7 @@ install_lite() {
     config_set "mask_domain" "$mask_domain"
     config_set "server_ip" "$server_ip"
     config_set "transport" "$XUI_TRANSPORT"
+    config_set "fingerprint" "$XUI_FP"
     config_set "xui_branch" "$XUI_BRANCH"
     [ -n "$XUI_INSTALL_VERSION" ] && config_set "xui_version" "$XUI_INSTALL_VERSION"
     config_set_int "port" 443
@@ -185,6 +187,9 @@ install_lite() {
 # ═══════════════════════════════════════════════════════════════════════
 install_pro() {
     log_step "$(t install_pro_step)"
+    if [ "${GOVLESS_LAZY:-0}" = "1" ]; then
+        log_info "$(t lazy_active)"
+    fi
 
     local server_ip
     server_ip=$(get_server_ip) || { log_error "Cannot detect IP"; return 1; }
@@ -201,16 +206,24 @@ install_pro() {
         return 1
     fi
 
-    # 2. DNS check — interactive menu with wait+countdown option
+    # 2. DNS check — interactive menu with wait+countdown option.
+    # Lazy: do not block on a prompt; warn and continue (operator pointed the
+    # A-record just before; cert step will report clearly if it isn't ready).
     if ! check_dns "$domain" "$server_ip"; then
-        dns_wait_or_choose "$domain" "$server_ip" || return 0
+        if [ "${GOVLESS_LAZY:-0}" = "1" ]; then
+            log_warning "$(tf lazy_dns_warn "$domain" "$server_ip")"
+        else
+            dns_wait_or_choose "$domain" "$server_ip" || return 0
+        fi
     fi
 
-    # 3. Email for SSL
-    echo -ne "  $(t pro_enter_email) "
-    local email
-    read -r email
-    email=$(echo "$email" | tr -d '[:space:]')
+    # 3. Email for SSL (lazy: skip — Let's Encrypt registers without email)
+    local email=""
+    if [ "${GOVLESS_LAZY:-0}" != "1" ]; then
+        echo -ne "  $(t pro_enter_email) "
+        read -r email
+        email=$(echo "$email" | tr -d '[:space:]')
+    fi
 
     # 4. Template selection (from 1800+ catalog or stub)
     local template_dir=""
@@ -221,7 +234,14 @@ install_pro() {
     fi
     if command -v jq &>/dev/null; then
         source "${SCRIPT_DIR}/lib/templates_catalog.sh" 2>/dev/null
-        if type interactive_template_selection &>/dev/null; then
+        if [ "${GOVLESS_LAZY:-0}" = "1" ] && type pick_random_template_id &>/dev/null; then
+            # Lazy: auto-pick a random template, no catalog browsing.
+            local _rtpl; _rtpl=$(pick_random_template_id)
+            if [ -n "$_rtpl" ] && type download_template &>/dev/null; then
+                template_dir=$(download_template "$_rtpl" 2>/dev/null) || template_dir=""
+                [ -n "$template_dir" ] && log_dim "$(tf lazy_template "$_rtpl")"
+            fi
+        elif type interactive_template_selection &>/dev/null; then
             # Codex 029 P2: distinguish "user picked skip" from "selection
             # failed". On real failure we abort install rather than silently
             # deploying a stub. "__skip__" → deliberate stub.
@@ -239,14 +259,17 @@ install_pro() {
         fi
     fi
 
-    # 5. Ask how many keys
-    echo ""
-    echo -ne "  $(t users_ask_count) $(t users_ask_count_hint): "
-    local users_count_input
-    read -r users_count_input
-    local users_count="${users_count_input:-3}"
-    if ! [[ "$users_count" =~ ^[0-9]+$ ]] || [ "$users_count" -lt 1 ] || [ "$users_count" -gt 100 ]; then
-        users_count=3
+    # 5. Ask how many keys (lazy = 5, no prompt)
+    local users_count=5
+    if [ "${GOVLESS_LAZY:-0}" != "1" ]; then
+        echo ""
+        echo -ne "  $(t users_ask_count) $(t users_ask_count_hint): "
+        local users_count_input
+        read -r users_count_input
+        users_count="${users_count_input:-3}"
+        if ! [[ "$users_count" =~ ^[0-9]+$ ]] || [ "$users_count" -lt 1 ] || [ "$users_count" -gt 100 ]; then
+            users_count=3
+        fi
     fi
 
     # Select 3X-UI version (Legacy 2.x or New 3.x) — but only if not
@@ -255,12 +278,20 @@ install_pro() {
     if xui_already_installed; then
         load_xui_version_from_config
         log_dim "3X-UI already installed (${XUI_BRANCH:-?} ${XUI_INSTALL_VERSION:-?}) — keeping it"
+    elif [ "${GOVLESS_LAZY:-0}" = "1" ]; then
+        XUI_BRANCH="new"   # newest 3.x
     else
         select_xui_version
     fi
 
-    # 6b. Select transport protocol (TCP / XHTTP / gRPC)
-    select_transport
+    # 6b. Transport + fingerprint (lazy = TCP + randomized, no prompts)
+    if [ "${GOVLESS_LAZY:-0}" = "1" ]; then
+        XUI_TRANSPORT="tcp"
+        XUI_FP="${GOVLESS_FP:-randomized}"
+    else
+        select_transport
+        select_fingerprint
+    fi
 
     # 7. Show config summary
     print_header "$(t config_title)"
@@ -272,7 +303,11 @@ install_pro() {
     echo -e "  $(t config_users)    ${CYAN}${users_count}${NC}"
     echo ""
 
-    confirm "$(t config_confirm)" || return 0
+    if [ "${GOVLESS_LAZY:-0}" = "1" ]; then
+        log_info "$(t lazy_autoconfirm)"
+    else
+        confirm "$(t config_confirm)" || return 0
+    fi
 
     # 7. Install dependencies
     install_dependencies || return 1
@@ -369,6 +404,7 @@ install_pro() {
     config_set "server_ip" "$server_ip"
     config_set "email" "$email"
     config_set "transport" "$XUI_TRANSPORT"
+    config_set "fingerprint" "$XUI_FP"
     config_set_int "port" 443
     config_set_int "users_count" "$users_count"
     config_set "version" "$GOVLESS_VERSION"
@@ -488,15 +524,15 @@ show_app_download() {
         1) echo -e "  ${GREEN}$(t app_ios_hint)${NC}"
            echo ""
            if command -v qrencode &>/dev/null; then
-               echo -e "  ${DIM}App Store: Hiddify${NC}"
-               qrencode -t UTF8 -m 2 "https://apps.apple.com/app/hiddify-proxy-vpn/id6596777532" 2>/dev/null
+               echo -e "  ${DIM}App Store: Happ${NC}"
+               qrencode -t UTF8 -m 2 "https://apps.apple.com/app/happ-proxy-utility/id6504287215" 2>/dev/null
            fi
            ;;
         2) echo -e "  ${GREEN}$(t app_android_hint)${NC}"
            echo ""
            if command -v qrencode &>/dev/null; then
-               echo -e "  ${DIM}Google Play: Hiddify${NC}"
-               qrencode -t UTF8 -m 2 "https://play.google.com/store/apps/details?id=app.hiddify.com" 2>/dev/null
+               echo -e "  ${DIM}Google Play: Happ${NC}"
+               qrencode -t UTF8 -m 2 "https://play.google.com/store/apps/details?id=com.happproxy" 2>/dev/null
            fi
            ;;
     esac
@@ -1121,6 +1157,10 @@ select_and_install() {
     echo -e "     ${DIM}$(t install_pro_desc2)${NC}"
     echo -e "     ${DIM}$(t install_pro_desc3)${NC}"
     echo ""
+    echo -e "  ${CYAN}3)${NC} ${BOLD}$(t install_lazy_title)${NC}"
+    echo -e "     ${DIM}$(t install_lazy_desc1)${NC}"
+    echo -e "     ${DIM}$(t install_lazy_desc2)${NC}"
+    echo ""
 
     local mode_choice
     echo -ne "  $(t install_mode_choice) "
@@ -1129,6 +1169,7 @@ select_and_install() {
     case "$mode_choice" in
         1) install_lite ;;
         2) install_pro ;;
+        3) GOVLESS_LAZY=1 install_pro ;;
         *) log_error "$(t invalid_choice)"; return 1 ;;
     esac
 }

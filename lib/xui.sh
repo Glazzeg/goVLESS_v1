@@ -10,6 +10,7 @@ XUI_LEGACY_FALLBACK="v2.9.4"  # hardcoded fallback if GitHub API unreachable
 
 # ── Transport globals ──────────────────────────────────────────────────
 XUI_TRANSPORT="tcp"    # "tcp", "xhttp", or "grpc"
+XUI_FP="${GOVLESS_FP:-randomized}"   # uTLS fingerprint: randomized(default)/chrome/firefox/safari/ios/random
 
 # ── Get latest 2.x version from GitHub API ─────────────────────────────
 get_latest_2x_version() {
@@ -129,6 +130,38 @@ select_xui_version() {
 }
 
 # ── Interactive transport picker (Lite mode only) ──────────────────────
+# ── uTLS fingerprint picker ─────────────────────────────────────────────
+# Sets the client TLS fingerprint baked into every key (fp=...). randomized is
+# the default (a fresh random fingerprint, hardest to fingerprint-block); chrome
+# /firefox/safari mimic a specific browser. random picks a real one at random
+# in the rare case DPI blocks a specific fingerprint.
+select_fingerprint() {
+    # honour non-interactive override
+    case "${GOVLESS_FP:-}" in
+        chrome|firefox|safari|ios|android|edge|random|randomized) XUI_FP="$GOVLESS_FP"; return 0 ;;
+    esac
+    echo "" >&2
+    echo -e "  ${BOLD}${WHITE}$(t fp_title)${NC}" >&2
+    echo -e "  ${DIM}$(printf '─%.0s' {1..55})${NC}" >&2
+    echo -e "  ${CYAN}1)${NC} ${BOLD}randomized${NC} — $(t fp_randomized)" >&2
+    echo -e "  ${CYAN}2)${NC} chrome — $(t fp_chrome)" >&2
+    echo -e "  ${CYAN}3)${NC} firefox" >&2
+    echo -e "  ${CYAN}4)${NC} safari" >&2
+    echo -e "  ${CYAN}5)${NC} random — $(t fp_random)" >&2
+    echo "" >&2
+    local choice
+    echo -ne "  $(t fp_choice) " >&2
+    read -r choice
+    case "$choice" in
+        2) XUI_FP="chrome" ;;
+        3) XUI_FP="firefox" ;;
+        4) XUI_FP="safari" ;;
+        5) XUI_FP="random" ;;
+        *) XUI_FP="randomized" ;;
+    esac
+    log_success "$(tf fp_selected "$XUI_FP")" >&2
+}
+
 select_transport() {
     echo "" >&2
     echo -e "  ${BOLD}${WHITE}$(t transport_title)${NC}" >&2

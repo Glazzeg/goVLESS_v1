@@ -176,13 +176,14 @@ api_create_reality_inbound() {
     [ -n "$REALITY_PUBLIC_KEY" ] || { log_error "Reality public key not set"; return 1; }
 
     # Build the payload using Python (injection-safe)
-    if ! python3 - "$mask_domain" "$REALITY_PRIVATE_KEY" "$REALITY_PUBLIC_KEY" "$transport" << 'PYEOF'
+    if ! python3 - "$mask_domain" "$REALITY_PRIVATE_KEY" "$REALITY_PUBLIC_KEY" "$transport" "${XUI_FP:-chrome}" << 'PYEOF'
 import json, sys
 
 mask_domain = sys.argv[1]
 private_key = sys.argv[2]
 public_key = sys.argv[3]
 transport = sys.argv[4]
+fp = sys.argv[5] if len(sys.argv) > 5 else "chrome"
 
 with open('/tmp/govless_clients.json') as f:
     clients = json.load(f)
@@ -214,7 +215,7 @@ stream = {
         "shortIds": short_ids,
         "settings": {
             "publicKey": public_key,
-            "fingerprint": "chrome",
+            "fingerprint": fp,
             "serverName": "",
             "spiderX": "/"
         }
@@ -308,13 +309,14 @@ api_create_tls_inbound() {
     [ -f /tmp/govless_clients.json ] || { log_error "Clients file not found"; return 1; }
 
     local transport="${XUI_TRANSPORT:-tcp}"
-    if ! python3 - "$domain" "$cert_file" "$key_file" "$transport" << 'PYEOF'
+    if ! python3 - "$domain" "$cert_file" "$key_file" "$transport" "${XUI_FP:-chrome}" << 'PYEOF'
 import json, sys
 
 domain = sys.argv[1]
 cert_file = sys.argv[2]
 key_file = sys.argv[3]
 transport = sys.argv[4]
+fp = sys.argv[5] if len(sys.argv) > 5 else "chrome"
 
 with open('/tmp/govless_clients.json') as f:
     clients = json.load(f)
@@ -347,7 +349,7 @@ stream = {
         }],
         "settings": {
             "allowInsecure": False,
-            "fingerprint": "chrome"
+            "fingerprint": fp
         }
     },
 }
@@ -500,7 +502,7 @@ generate_vless_link_reality() {
     local encoded_name
     encoded_name=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$name" 2>/dev/null || echo "$name")
 
-    local params="encryption=none&type=${transport}&security=reality&pbk=${public_key}&fp=chrome&sni=${mask_domain}&sid=${short_id}&spx=%2F"
+    local params="encryption=none&type=${transport}&security=reality&pbk=${public_key}&fp=${XUI_FP:-chrome}&sni=${mask_domain}&sid=${short_id}&spx=%2F"
     if [ "$transport" = "tcp" ]; then
         params="${params}&flow=xtls-rprx-vision"
     elif [ "$transport" = "grpc" ]; then
@@ -521,7 +523,7 @@ generate_vless_link_tls() {
     local encoded_name
     encoded_name=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$name" 2>/dev/null || echo "$name")
 
-    local params="encryption=none&type=${transport}&security=tls&sni=${domain}&fp=chrome"
+    local params="encryption=none&type=${transport}&security=tls&sni=${domain}&fp=${XUI_FP:-chrome}"
     if [ "$transport" = "tcp" ]; then
         params="${params}&alpn=http%2F1.1&flow=xtls-rprx-vision"
     elif [ "$transport" = "grpc" ]; then
@@ -562,7 +564,7 @@ print(sids[0] if sids else '')
 
     # Generate links
     local transport="${XUI_TRANSPORT:-tcp}"
-    if ! python3 - "$mode" "$server" "$mask_domain" "${REALITY_PUBLIC_KEY:-}" "$short_id" "$transport" << 'PYEOF'
+    if ! python3 - "$mode" "$server" "$mask_domain" "${REALITY_PUBLIC_KEY:-}" "$short_id" "$transport" "${XUI_FP:-chrome}" << 'PYEOF'
 import json, sys
 from urllib.parse import quote
 
@@ -572,6 +574,7 @@ mask_domain = sys.argv[3]
 public_key = sys.argv[4]
 short_id = sys.argv[5]
 transport = sys.argv[6]
+fp = sys.argv[7] if len(sys.argv) > 7 else "chrome"
 
 with open('/tmp/govless_users_map.json') as f:
     users = json.load(f)
@@ -582,7 +585,7 @@ for name, uuid in users.items():
     if mode == "lite":
         # Base params
         params = f"encryption=none&type={transport}&security=reality"
-        params += f"&pbk={public_key}&fp=chrome"
+        params += f"&pbk={public_key}&fp={fp}"
         params += f"&sni={mask_domain}&sid={short_id}"
         params += f"&spx=%2F"
 
@@ -597,7 +600,7 @@ for name, uuid in users.items():
         link = f"vless://{uuid}@{server}:443?{params}#{enc_name}"
     else:
         # Pro mode: VLESS+TLS over chosen transport
-        params = f"encryption=none&type={transport}&security=tls&sni={server}&fp=chrome"
+        params = f"encryption=none&type={transport}&security=tls&sni={server}&fp={fp}"
         if transport == "tcp":
             params += "&alpn=http%2F1.1&flow=xtls-rprx-vision"
         elif transport == "xhttp":
@@ -704,6 +707,11 @@ if not rows:
     sys.exit(1)
 
 quote = lambda x: urllib.parse.quote(str(x))
+try:
+    _cfg = json.load(open("/opt/govless/config.json"))
+    fp = _cfg.get("fingerprint") or "chrome"
+except Exception:
+    fp = "chrome"
 links = {}
 users_map = {}
 subs = {}
@@ -737,11 +745,11 @@ for row in rows:
         sni = sni_list[0] if sni_list else ""
         sid_list = rs.get("shortIds") or [""]
         sid = sid_list[0] if sid_list else ""
-        common = f"security=reality&pbk={pbk}&fp=chrome&sni={sni}&sid={sid}&spx=%2F"
+        common = f"security=reality&pbk={pbk}&fp={fp}&sni={sni}&sid={sid}&spx=%2F"
     elif security == "tls":
         ts = stream.get("tlsSettings", {})
         sni = ts.get("serverName", server)
-        common = f"security=tls&sni={sni}&fp=chrome"
+        common = f"security=tls&sni={sni}&fp={fp}"
         # Read ALPN from DB (P2 #2)
         alpn_list = ts.get("alpn") or []
         if alpn_list:

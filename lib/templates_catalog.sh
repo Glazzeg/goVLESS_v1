@@ -36,6 +36,13 @@ get_categories() {
     jq -r '.categories[] | "\(.id)|\(.name)|\(.icon)|\(.templates | length)"' "$CATALOG_FILE" 2>/dev/null
 }
 
+# Lazy mode: pick one random template id from the whole catalog.
+pick_random_template_id() {
+    [ -f "$CATALOG_FILE" ] || return 1
+    command -v jq >/dev/null 2>&1 || return 1
+    jq -r '.categories[].templates[].id' "$CATALOG_FILE" 2>/dev/null | shuf -n 1
+}
+
 get_category_name() {
     local cat_id="$1"
     jq --arg id "$cat_id" -r '.categories[] | select(.id == $id) | .name' "$CATALOG_FILE" 2>/dev/null

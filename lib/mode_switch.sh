@@ -63,6 +63,7 @@ with open('/tmp/govless_mode_switch_meta.json', 'w') as f:
         "inbound_id": int(inbound_id),
         "current_transport": stream.get("network", "tcp"),
         "current_security": stream.get("security", ""),
+        "current_fp": ((stream.get("realitySettings") or stream.get("tlsSettings") or {}).get("settings") or {}).get("fingerprint", ""),
         "client_count": len(clients),
     }, f)
 
@@ -206,6 +207,15 @@ switch_mode() {
     [ -z "$target_transport" ] && target_transport="tcp"
     export XUI_TRANSPORT="$target_transport"
 
+    # Preserve the TLS fingerprint across the switch too — same reason as
+    # transport: XUI_FP defaults to chrome in a fresh process, which would
+    # silently downgrade a firefox/randomized install and desync SSH vs bot keys.
+    local current_fp
+    current_fp=$(python3 -c "import json; print(json.load(open('/tmp/govless_mode_switch_meta.json')).get('current_fp',''))" 2>/dev/null)
+    [ -z "$current_fp" ] && current_fp=$(config_get fingerprint chrome 2>/dev/null)
+    [ -z "$current_fp" ] && current_fp="chrome"
+    export XUI_FP="$current_fp"
+
     local server_ip
     server_ip=$(get_server_ip) || { log_error "Cannot detect IP"; return 1; }
 
@@ -313,6 +323,7 @@ switch_mode() {
     # ── 8. Persist new state ────────────────────────────────────────────
     config_set "mode" "$target_mode"
     config_set "transport" "$XUI_TRANSPORT"
+    config_set "fingerprint" "$XUI_FP"
     if [ "$target_mode" = "pro" ]; then
         config_set "domain" "$target_domain"
         [ -n "$target_email" ] && config_set "email" "$target_email"

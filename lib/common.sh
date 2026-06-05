@@ -209,18 +209,14 @@ apt_install() {
 }
 
 # ── Dependency management ───────────────────────────────────────────────
-CRITICAL_DEPS=(curl jq openssl qrencode expect sqlite3 dnsutils python3)
-OPTIONAL_DEPS=(git nginx certbot file)
+CRITICAL_DEPS=(curl jq openssl qrencode sqlite3 python3)
+OPTIONAL_DEPS=(git nginx certbot file expect dnsutils)
 
 install_dependencies() {
     local missing=()
     for cmd in "${CRITICAL_DEPS[@]}"; do
         if ! command -v "$cmd" &>/dev/null; then
-            case "$cmd" in
-                expect)   missing+=("expect") ;;
-                qrencode) missing+=("qrencode") ;;
-                *)        missing+=("$cmd") ;;
-            esac
+            missing+=("$cmd")
         fi
     done
 

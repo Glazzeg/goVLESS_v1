@@ -475,11 +475,13 @@ def build_vless_links(
             sni = sni_list[0] if sni_list else ""
             sid_list = rs.get("shortIds") or [""]
             sid = sid_list[0] if sid_list else ""
-            common = f"security=reality&pbk={pbk}&fp=chrome&sni={sni}&sid={sid}&spx=%2F"
+            fp = (rs.get("settings") or {}).get("fingerprint") or "chrome"
+            common = f"security=reality&pbk={pbk}&fp={fp}&sni={sni}&sid={sid}&spx=%2F"
         elif security == "tls":
             ts = stream.get("tlsSettings", {}) or {}
             sni = ts.get("serverName") or server
-            common = f"security=tls&sni={sni}&fp=chrome"
+            fp = (ts.get("settings") or {}).get("fingerprint") or "chrome"
+            common = f"security=tls&sni={sni}&fp={fp}"
             alpn_list = ts.get("alpn") or []
             if alpn_list:
                 common += f"&alpn={quote(','.join(alpn_list))}"
