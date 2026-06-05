@@ -1147,19 +1147,19 @@ select_and_install() {
 
     print_header "$(t install_select_mode)"
     echo ""
-    echo -e "  ${CYAN}1)${NC} ${BOLD}$(t install_lite_title)${NC}"
-    echo -e "     ${DIM}$(t install_lite_desc1)${NC}"
-    echo -e "     ${DIM}$(t install_lite_desc2)${NC}"
-    echo -e "     ${DIM}$(t install_lite_desc3)${NC}"
+    echo -e "  ${CYAN}1)${NC} ${BOLD}$(t install_lazy_title)${NC}"
+    echo -e "     ${DIM}$(t install_lazy_desc1)${NC}"
+    echo -e "     ${DIM}$(t install_lazy_desc2)${NC}"
     echo ""
     echo -e "  ${CYAN}2)${NC} ${BOLD}$(t install_pro_title)${NC}"
     echo -e "     ${DIM}$(t install_pro_desc1)${NC}"
     echo -e "     ${DIM}$(t install_pro_desc2)${NC}"
     echo -e "     ${DIM}$(t install_pro_desc3)${NC}"
     echo ""
-    echo -e "  ${CYAN}3)${NC} ${BOLD}$(t install_lazy_title)${NC}"
-    echo -e "     ${DIM}$(t install_lazy_desc1)${NC}"
-    echo -e "     ${DIM}$(t install_lazy_desc2)${NC}"
+    echo -e "  ${CYAN}3)${NC} ${BOLD}$(t install_lite_title)${NC}"
+    echo -e "     ${DIM}$(t install_lite_desc1)${NC}"
+    echo -e "     ${DIM}$(t install_lite_desc2)${NC}"
+    echo -e "     ${DIM}$(t install_lite_desc3)${NC}"
     echo ""
 
     local mode_choice
@@ -1167,9 +1167,9 @@ select_and_install() {
     read -r mode_choice
 
     case "$mode_choice" in
-        1) install_lite ;;
+        ""|1) GOVLESS_LAZY=1 install_pro ;;
         2) install_pro ;;
-        3) GOVLESS_LAZY=1 install_pro ;;
+        3) install_lite ;;
         *) log_error "$(t invalid_choice)"; return 1 ;;
     esac
 }

@@ -32,7 +32,7 @@ I18N[fp_random]="случайный реальный браузерный отп
 I18N[fp_randomized]="рекомендуется — свежий случайный отпечаток, сложнее заблокировать"
 I18N[fp_choice]="Ваш выбор [1-5]:"
 I18N[fp_selected]="Отпечаток: %s"
-I18N[install_lazy_title]="Pro — авто (ленивый) режим"
+I18N[install_lazy_title]="🚀 Pro — авто (ленивый), только домен · рекомендуется"
 I18N[install_lazy_desc1]="Всё выбирается само: случайный шаблон сайта, 5 ключей,"
 I18N[install_lazy_desc2]="TCP, случайный отпечаток. Вы вводите только домен."
 I18N[lazy_dns_warn]="DNS для %s ещё не указывает на %s — продолжаю (lazy); шаг SSL не пройдёт, если запись не настроена."
@@ -101,7 +101,7 @@ I18N[install_pro_title]="🛡  Pro — свой сайт + полная маск
 I18N[install_pro_desc1]="nginx + Let's Encrypt + HTML-шаблон + 3X-UI."
 I18N[install_pro_desc2]="DPI видит реальный сайт с реальным сертификатом."
 I18N[install_pro_desc3]="Требует: домен, направленный на этот сервер."
-I18N[install_mode_choice]="Выбор (1/3):"
+I18N[install_mode_choice]="Выбор (1/2/3, по умолчанию 1):"
 I18N[install_lite_step]="Установка Lite-режима (Reality)"
 I18N[install_pro_step]="Установка Pro-режима (TLS)"
 
