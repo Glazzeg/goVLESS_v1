@@ -62,8 +62,12 @@ if [ -d "$INSTALL_DIR/.git" ]; then
     # GIT_TERMINAL_PROMPT=0 + GIT_ASKPASS=/bin/false (set at top) prevent
     # the dreaded "Username for 'https://github.com':" interactive prompt.
     if git "${GIT_AUTH_ARGS[@]}" fetch origin "$BRANCH" --quiet 2>/dev/null; then
-        git checkout "$BRANCH" --quiet 2>/dev/null
-        git reset --hard "origin/$BRANCH" --quiet 2>/dev/null
+        # fail-soft: a dirty/divergent working copy must NOT abort the
+        # script under `set -e` before we exec the installer. Force-checkout;
+        # if any step fails, keep going and run whatever local copy exists.
+        git checkout -f "$BRANCH" --quiet 2>/dev/null \
+            || git checkout -qB "$BRANCH" "origin/$BRANCH" 2>/dev/null || true
+        git reset --hard "origin/$BRANCH" --quiet 2>/dev/null || true
         echo -e "  ${GREEN}✓${NC}  Updated to latest $BRANCH"
     else
         echo -e "  ${CYAN}ℹ${NC}  Could not reach private repo — continuing with local copy."
