@@ -11,7 +11,7 @@ const INTRO_COPY = {
     paragraphs: ["Это не сервис. Это инструмент, который поднимает VLESS-туннель на вашем собственном сервере. Никто между вами и сетью.", "Вы платите своему хостеру, а не нам. Соблюдайте законы своей страны. Не используйте туннель во вред — ни себе, ни другим.", "Дальше вы выберете сервер, добавите первого клиента и получите ссылку для подключения. Это занимает примерно три минуты."],
     needServer: "Нужен сервер",
     haveServer: "Сервер уже есть",
-    needServerSub: "Партнёры со скидками",
+    needServerSub: "Рекомендации хостинга",
     haveServerSub: "Перейти к мастеру"
   },
   en: {
@@ -22,7 +22,7 @@ const INTRO_COPY = {
     paragraphs: ["This is not a service. It is a tool that raises a VLESS tunnel on your own server. Nobody sits between you and the open internet.", "You pay your host, not us. Respect your local laws. Do not use the tunnel to harm yourself or anyone else.", "Next you will pick a server, add a first client, and get a connect link. The whole thing takes about three minutes."],
     needServer: "I need a server",
     haveServer: "I already have one",
-    needServerSub: "Discounted partners",
+    needServerSub: "Hosting recommendations",
     haveServerSub: "Go to setup wizard"
   }
 };

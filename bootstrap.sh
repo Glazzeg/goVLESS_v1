@@ -18,7 +18,7 @@ export GIT_ASKPASS=/bin/false
 #   3) Once a public release-mirror is set up, switch REPO to that.
 # For now, REPO points to the canonical private goVLESS on main; if the
 # clone fails for the user, the script prints a clear error.
-REPO="${GOVLESS_REPO:-https://github.com/anten-ka/goVLESS.git}"
+REPO="${GOVLESS_REPO:-https://github.com/Glazzeg/goVLESS_v1.git}"
 BRANCH="${GOVLESS_BRANCH:-rc1}"
 INSTALL_DIR="/opt/govless-installer"
 # Canonical URL (no token) — for error messages and final remote

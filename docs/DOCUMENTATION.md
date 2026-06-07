@@ -233,7 +233,7 @@ flowchart TB
 | Дата | Что |
 |------|-----|
 | 2025 → начало 2026 | проект назывался **XUIFAST**, был только bash-инсталлер |
-| Февраль 2026 | ребрендинг → **goVLESS**, приватный репо `anten-ka/goVLESS` |
+| Февраль 2026 | ребрендинг → **goVLESS**, приватный репо `Glazzeg/goVLESS_v1` |
 | Май 2026 | **Phase A**: govlessctl + Telegram-бот + WebApp + systemd |
 | TBD | **Phase B**: квоты, push, мультисервер |
 
@@ -261,7 +261,7 @@ flowchart TB
 ```bash
 ssh root@<твой-ip>
 
-bash <(curl -sL https://raw.githubusercontent.com/anten-ka/goVLESS/main/bootstrap.sh)
+bash <(curl -sL https://raw.githubusercontent.com/Glazzeg/goVLESS_v1/main/bootstrap.sh)
 ```
 
 Ответь:
@@ -873,7 +873,7 @@ curl -i http://domain.com/.well-known/acme-challenge/test
 ```bash
 # 0. Бэкап (см. §7)
 x-ui uninstall
-bash <(curl -sL https://raw.githubusercontent.com/anten-ka/goVLESS/main/bootstrap.sh)
+bash <(curl -sL https://raw.githubusercontent.com/Glazzeg/goVLESS_v1/main/bootstrap.sh)
 # Restore из бэкапа
 ```
 
@@ -1021,7 +1021,7 @@ flowchart LR
 
 ### Version & release model
 
-- Single `main` branch in private repo `anten-ka/goVLESS`.
+- Single `main` branch in private repo `Glazzeg/goVLESS_v1`.
 - Public releases via cherry-pick / squash-merge to a public mirror (TBD) + GitHub Release with `GOVLESS_VERSION` bump in `lib/common.sh`.
 - AI agents do NOT push to a public mirror without explicit human approval.
 
@@ -1758,8 +1758,8 @@ flowchart TD
 ### 18.4 GH_TOKEN sanitization
 
 ```bash
-git -c http.https://github.com/anten-ka/goVLESS.git.extraHeader="Authorization: Bearer $GH_TOKEN" \
-    clone https://github.com/anten-ka/goVLESS.git /opt/govless-installer
+git -c http.https://github.com/Glazzeg/goVLESS_v1.git.extraHeader="Authorization: Bearer $GH_TOKEN" \
+    clone https://github.com/Glazzeg/goVLESS_v1.git /opt/govless-installer
 ```
 
 Token never lands in `.git/config` or stderr.
@@ -1825,7 +1825,7 @@ Per `ai-bridge/claude-codex/017-architect-codex-016-response.md`:
 ### 20.1 Local dev setup
 
 ```bash
-git clone https://github.com/anten-ka/goVLESS
+git clone https://github.com/Glazzeg/goVLESS_v1
 cd goVLESS
 
 python3 -m pip install ruff --break-system-packages
@@ -1838,7 +1838,7 @@ python3 -m py_compile phase-a/govlessctl/*.py phase-a/bot/*.py phase-a/bot/handl
 
 ```bash
 ssh root@<vps>
-bash <(curl -sL https://raw.githubusercontent.com/anten-ka/goVLESS/main/bootstrap.sh)
+bash <(curl -sL https://raw.githubusercontent.com/Glazzeg/goVLESS_v1/main/bootstrap.sh)
 cd /opt/govless-installer
 bash phase-a/systemd/install/install_phase_a.sh
 ```
@@ -1885,7 +1885,7 @@ P-severity:
 - Subject: imperative, ≤72 chars.
 - Body: what + why.
 - Reference bridge file: `Per ai-bridge/claude-codex/016 P1 #2.`
-- Author identity: `Claude (Architect) <claude@anten-ka.com>`.
+- Author identity: `Claude (Architect) <claude@yourdomain.com>`.
 
 ### 20.7 What lives where (cheat sheet)
 
@@ -2031,7 +2031,7 @@ goVLESS/
 
 Получить:
 ```bash
-git clone -b dev https://github.com/anten-ka/goVLESS.git
+git clone -b dev https://github.com/Glazzeg/goVLESS_v1.git
 cd goVLESS/ai-bridge/claude-codex
 ls  # 36+ файлов от 001 до 036+
 ```

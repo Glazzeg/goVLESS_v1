@@ -20,7 +20,7 @@ apt-get update -qq && apt-get install -y -qq git curl >/dev/null 2>&1
 # Clone or update repo
 REPO_DIR="${HOME}/goVLESS"  # local checkout; URL controlled by GOVLESS_REPO/GH_TOKEN
 # Build auth args once (used for both clone and fetch)
-REPO_URL="${GOVLESS_REPO:-https://github.com/anten-ka/goVLESS.git}"
+REPO_URL="${GOVLESS_REPO:-https://github.com/Glazzeg/goVLESS_v1.git}"
 BRANCH="${GOVLESS_BRANCH:-main}"
 GIT_AUTH_ARGS=()
 if [ -n "${GH_TOKEN:-}" ] && [[ "$REPO_URL" == https://github.com/* ]] && [[ "$REPO_URL" != *"@"* ]]; then

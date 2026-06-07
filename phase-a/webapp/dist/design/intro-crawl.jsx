@@ -14,7 +14,7 @@ const INTRO_COPY = {
     ],
     needServer: "Нужен сервер",
     haveServer: "Сервер уже есть",
-    needServerSub: "Партнёры со скидками",
+    needServerSub: "Рекомендации хостинга",
     haveServerSub: "Перейти к мастеру",
   },
   en: {
@@ -29,7 +29,7 @@ const INTRO_COPY = {
     ],
     needServer: "I need a server",
     haveServer: "I already have one",
-    needServerSub: "Discounted partners",
+    needServerSub: "Hosting recommendations",
     haveServerSub: "Go to setup wizard",
   },
 };

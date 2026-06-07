@@ -1,6 +1,7 @@
 [Unit]
 Description=goVLESS control daemon (JSON-RPC over UNIX socket)
-Documentation=https://github.com/anten-ka/govless
+# Обновлено: замена ссылки на новый репозиторий Glazzeg/goVLESS_v1
+Documentation=https://github.com/Glazzeg/goVLESS_v1
 After=network-online.target
 Wants=network-online.target
 ConditionPathExists=/opt/govless/bin/govlessctl-daemon

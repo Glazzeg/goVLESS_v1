@@ -630,7 +630,7 @@ show_credits() {
     echo -e "  ${MAGENTA}$(t credits_title)${NC}"
     echo -e "  ${DIM}3X-UI: github.com/MHSanaei/3x-ui${NC}"
     echo -e "  ${DIM}Xray-core: github.com/XTLS/Xray-core${NC}"
-    echo -e "  ${DIM}goVLESS: anten-ka${NC}"
+    echo -e "  ${DIM}goVLESS${NC}"
     echo -e "  ${DIM}$(printf '─%.0s' {1..55})${NC}"
 }
 

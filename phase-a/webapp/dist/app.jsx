@@ -1461,7 +1461,8 @@ function AboutScreenReal({ T, L, themePref, onThemeClick, navigate }) {
           {row(L.mode, s?.mode || "—")}
         </div>
         <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:14,padding:14,marginBottom:12,boxShadow:T.shadow,display:"flex",flexDirection:"column",gap:8}}>
-          <a href="https://github.com/anten-ka/goVLESS" target="_blank" rel="noopener" onClick={(e)=>{ if (TG && TG.openLink) { e.preventDefault(); TG.openLink("https://github.com/anten-ka/goVLESS"); } }} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",color:T.ink,textDecoration:"none",borderBottom:`1px solid ${T.hair}`}}>
+          {/* Обновлено: замена ссылки на новый репозиторий Glazzeg/goVLESS_v1 */}
+          <a href="https://github.com/Glazzeg/goVLESS_v1" target="_blank" rel="noopener" onClick={(e)=>{ if (TG && TG.openLink) { e.preventDefault(); TG.openLink("https://github.com/Glazzeg/goVLESS_v1"); } }} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",color:T.ink,textDecoration:"none",borderBottom:`1px solid ${T.hair}`}}>
             <span style={{fontSize:14,fontWeight:500}}>{L.src_github}</span>
             <span style={{color:T.ink3}}>→</span>
           </a>

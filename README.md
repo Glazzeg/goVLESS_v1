@@ -7,14 +7,15 @@ bash-installer для VLESS (3X-UI + Xray, Reality/TLS) — one-command setup
 
 ## Quick start (для разработчиков)
 ```bash
-gh repo clone anten-ka/goVLESS
-cd goVLESS
-cat GOVLESS_DOCS.md       # полная документация
+# Клонирование вашего репозитория
+gh repo clone Glazzeg/goVLESS_v1
+cd goVLESS_v1
+cat docs/DOCUMENTATION.md       # полная документация
 cat ai-bridge/README.md   # как ведутся AI-handoffs
 ```
 
 ## Документация
-- `GOVLESS_DOCS.md` — полная документация
+- `docs/DOCUMENTATION.md` — полная документация
 - `AUDIT_GUIDE.md` — гайд по аудиту кода
 - `CLAUDE.md` — инструкции для AI-ассистентов
 - `ai-bridge/` — handoffs между AI-агентами (Architect=Claude, Reviewer=Codex)

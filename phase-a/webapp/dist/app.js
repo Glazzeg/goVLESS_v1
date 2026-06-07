@@ -3336,13 +3336,14 @@ function AboutScreenReal({
       gap: 8
     }
   }, /*#__PURE__*/React.createElement("a", {
-    href: "https://github.com/anten-ka/goVLESS",
+    // Обновлено: замена ссылки на новый репозиторий Glazzeg/goVLESS_v1
+    href: "https://github.com/Glazzeg/goVLESS_v1",
     target: "_blank",
     rel: "noopener",
     onClick: e => {
       if (TG && TG.openLink) {
         e.preventDefault();
-        TG.openLink("https://github.com/anten-ka/goVLESS");
+        TG.openLink("https://github.com/Glazzeg/goVLESS_v1");
       }
     },
     style: {

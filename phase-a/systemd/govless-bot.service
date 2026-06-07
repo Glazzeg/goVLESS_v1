@@ -1,6 +1,7 @@
 [Unit]
 Description=goVLESS Telegram bot (aiogram)
-Documentation=https://github.com/anten-ka/govless
+# Обновлено: замена ссылки на новый репозиторий Glazzeg/goVLESS_v1
+Documentation=https://github.com/Glazzeg/goVLESS_v1
 After=govlessctl.service network-online.target
 Wants=network-online.target
 Requires=govlessctl.service
