@@ -1,25 +1,15 @@
 #!/bin/bash
 # goVLESS bootstrap — one-liner installer
-# Usage: bash <(curl -sL URL/bootstrap.sh)
+# Usage: bash <(curl -fsSL https://raw.githubusercontent.com/Glazzeg/goVLESS_v1/main/bootstrap.sh)
 set -euo pipefail
 
-# Codex 019: ensure git never tries interactive auth on any path.
-# Without these, `git fetch` against a private HTTPS remote with no
-# credentials will fall through to `Username for 'https://github.com:'`
-# prompt and block the installer indefinitely.
+# Keep Git from prompting for credentials in non-interactive installs.
 export GIT_TERMINAL_PROMPT=0
 export GIT_ASKPASS=/bin/false
 
-# Source repo. goVLESS is a private repo, so anonymous public clone will
-# fail with auth error. End-user install path requires ONE of:
-#   1) gh auth login (interactive, GH PAT) before running this script;
-#   2) GH_TOKEN env var set, passed via Authorization Basic header (NOT in URL —
-#      keeps token out of .git/config and stderr on failure);
-#   3) Once a public release-mirror is set up, switch REPO to that.
-# For now, REPO points to the canonical private goVLESS on main; if the
-# clone fails for the user, the script prints a clear error.
+# The repository is public. Optional overrides support private forks.
 REPO="${GOVLESS_REPO:-https://github.com/Glazzeg/goVLESS_v1.git}"
-BRANCH="${GOVLESS_BRANCH:-rc1}"
+BRANCH="${GOVLESS_BRANCH:-main}"
 INSTALL_DIR="/opt/govless-installer"
 # Canonical URL (no token) — for error messages and final remote
 REPO_CANONICAL="$REPO"
@@ -56,11 +46,6 @@ fi
 if [ -d "$INSTALL_DIR/.git" ]; then
     echo -e "  ${CYAN}ℹ${NC}  Updating..."
     cd "$INSTALL_DIR"
-    # Codex 019 fail-soft: if update can't reach the private repo
-    # (no GH_TOKEN, expired token, network), fall through to using the
-    # already-installed local copy instead of crashing the installer.
-    # GIT_TERMINAL_PROMPT=0 + GIT_ASKPASS=/bin/false (set at top) prevent
-    # the dreaded "Username for 'https://github.com':" interactive prompt.
     if git "${GIT_AUTH_ARGS[@]}" fetch origin "$BRANCH" --quiet 2>/dev/null; then
         # fail-soft: a dirty/divergent working copy must NOT abort the
         # script under `set -e` before we exec the installer. Force-checkout;
@@ -70,15 +55,19 @@ if [ -d "$INSTALL_DIR/.git" ]; then
         git reset --hard "origin/$BRANCH" --quiet 2>/dev/null || true
         echo -e "  ${GREEN}✓${NC}  Updated to latest $BRANCH"
     else
-        echo -e "  ${CYAN}ℹ${NC}  Could not reach private repo — continuing with local copy."
-        echo -e "  ${CYAN}ℹ${NC}  To update next time: set GH_TOKEN or use a public mirror."
+        echo -e "  ${CYAN}ℹ${NC}  Could not update from $REPO — continuing with the installed copy."
+        echo -e "  ${CYAN}ℹ${NC}  Check the repository URL, branch, and network before updating."
     fi
 else
     echo -e "  ${CYAN}ℹ${NC}  Downloading goVLESS..."
-    rm -rf "$INSTALL_DIR"
+    if [ -e "$INSTALL_DIR" ]; then
+        echo -e "  ${RED}✗${NC} $INSTALL_DIR exists but is not a Git checkout."
+        echo -e "  ${RED}✗${NC} Move or rename it, then run the installer again."
+        exit 1
+    fi
     if ! git "${GIT_AUTH_ARGS[@]}" clone -b "$BRANCH" --depth 1 "$REPO_CANONICAL" "$INSTALL_DIR" 2>/dev/null; then
         echo -e "  ${RED}✗${NC} Failed to clone $REPO_CANONICAL (branch $BRANCH)"
-        echo -e "  ${RED}✗${NC} goVLESS is private — set GH_TOKEN env var or run 'gh auth login' first."
+        echo -e "  ${RED}✗${NC} Check the repository URL, branch, and network connection."
         exit 1
     fi
 fi

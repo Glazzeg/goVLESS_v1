@@ -1,24 +1,27 @@
 # goVLESS
 
-bash-installer для VLESS (3X-UI + Xray, Reality/TLS) — one-command setup
-для нетехнических пользователей.
+Интерактивный установщик личного VLESS-сервера на базе 3X-UI и Xray. Поддерживаются режимы Reality (Lite) и TLS с собственным доменом (Pro).
 
-> Private repo. Public release flow via mirror — см. `ai-bridge/claude-codex/001`.
+## Быстрая установка на Ubuntu VPS
 
-## Quick start (для разработчиков)
+Подключитесь к серверу по SSH под `root` и запустите:
+
 ```bash
-# Клонирование вашего репозитория
-gh repo clone Glazzeg/goVLESS_v1
-cd goVLESS_v1
-cat docs/DOCUMENTATION.md       # полная документация
-cat ai-bridge/README.md   # как ведутся AI-handoffs
+bash <(curl -fsSL https://raw.githubusercontent.com/Glazzeg/goVLESS_v1/main/bootstrap.sh)
+```
+
+Установщик скачает проект из публичной ветки `main` и проведёт через настройку. Для Pro-режима потребуется домен, направленный на IP сервера. Перед установкой прочитайте [полную инструкцию](docs/DOCUMENTATION.md#2-установка-с-нуля) и [сведения о безопасности](docs/DOCUMENTATION.md#9-безопасность).
+
+## Установка вручную
+
+```bash
+apt update && apt install -y git
+git clone --depth 1 --branch main https://github.com/Glazzeg/goVLESS_v1.git /opt/govless-installer
+cd /opt/govless-installer
+bash govless.sh
 ```
 
 ## Документация
-- `docs/DOCUMENTATION.md` — полная документация
-- `AUDIT_GUIDE.md` — гайд по аудиту кода
-- `CLAUDE.md` — инструкции для AI-ассистентов
-- `ai-bridge/` — handoffs между AI-агентами (Architect=Claude, Reviewer=Codex)
 
-## Лицензия
-TBD — добавить в первом релиз-коммите.
+- [Полная документация](docs/DOCUMENTATION.md)
+- [Лицензия](LICENSE)
